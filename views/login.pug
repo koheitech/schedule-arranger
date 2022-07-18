@@ -1,0 +1,6 @@
+extends layout 
+
+block content 
+  a(href="/auth/github") Log in with GitHub
+  if user 
+    p Logged in as #{user.username}
