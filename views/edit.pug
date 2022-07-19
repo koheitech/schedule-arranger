@@ -2,6 +2,7 @@ extends layout
 block content 
   h3.my-3 Edit Schedule
   form(method="post", action=`/schedules/${schedule.scheduleId}?edit=1`)
+    input(type="hidden" name="_csrf" value!=csrfToken)
     div.form-group
       label(for="scheduleName") Schedule Name 
       input(type="text" name="scheduleName" value=schedule.scheduleName)#scheduleName.form-control
@@ -19,4 +20,5 @@ block content
       button(type="submit").btn.btn-info Edit Schedule
   h3.my-3 Dangerous Change 
     form(method="post", action=`/schedules/${schedule.scheduleId}?delete=1`)
+      input(type="hidden" name="_csrf" value!=csrfToken)
       button(type="submit").btn.btn-danger Delete Schedule
