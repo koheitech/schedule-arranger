@@ -5,7 +5,22 @@ block content
   p Welcome to #{title}
   div
     if user 
-      a(href="/logout") Logout from #{user.username}
+      div
+        a(href="/logout") Logout from #{user.username}
+      div
+        a(href="/schedules/new") Create Schedule
+      - var hasSchedule = schedules.length > 0
+      if hasSchedule
+        h3 Your Schedules 
+        table.table 
+          tr 
+            th Schedule Name 
+            th Updated at 
+          each schedule in schedules 
+            tr 
+              td 
+                a(href=`/schedules/${schedule.scheduleId}`) #{schedule.scheduleName}
+              td #{schedule.updatedAt}
     else 
-      a(href="/login") Login
-
+      div
+        a(href="/login") Login
