@@ -12,7 +12,6 @@ dayjs.extend(timezone);
 /* GET home page. */
 router.get('/', async (req, res, next) => {
   const title = 'Schedule Arranger';
-
   if (req.user) {
     const schedules = await Schedule.findAll({
       where: {
