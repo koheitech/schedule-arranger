@@ -7,6 +7,27 @@ const helmet = require('helmet');
 const session = require('express-session');
 const passport = require('passport');
 
+// loading model
+const User = require('./models/user');
+const Schedule = require('./models/schedule');
+const Availability = require('./models/availability');
+const Candidate = require('./models/candidate');
+const Comment = require('./models/comment');
+
+User.sync().then(async () => {
+  Schedule.belongsTo(User, { foreignKey: 'createdBy' });
+  Schedule.sync();
+
+  Comment.belongsTo(User, { foreignKey: 'userId' });
+  Comment.sync();
+
+  Availability.belongsTo(User, { foreignKey: 'userId' });
+  await Candidate.sync();
+
+  Availability.belongsTo(Candidate, { foreignKey: 'candidateId' });
+  Availability.sync();
+});
+
 const GitHubStrategy = require('passport-github2').Strategy;
 const GITHUB_CLIENT_ID = '2acce5ef5679748c5e91';
 const GITHUB_CLIENT_SECRET = '8262b0fad194259e64b1e2fafd5fac67dcd23195';
@@ -25,8 +46,12 @@ passport.use(new GitHubStrategy({
   callbackURL: 'http://localhost:8000/auth/github/callback'
 },
   function (accessToken, refreshToken, profile, done) {
-    process.nextTick(function () {
-      return done(null, profile);
+    process.nextTick(async function () {
+      await User.upsert({
+        userId: profile.id,
+        username: profile.username
+      });
+      done(null, profile);
     });
   }
 ));
