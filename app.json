@@ -1,0 +1,7 @@
+{
+  "name": "schedule-arranger",
+  "description": "Schedule Arranger",
+  "logo": "",
+  "keywords": ["node"],
+  "image": "heroku/nodejs"
+}
