@@ -16,23 +16,14 @@ router.get('/new', authenticationEnsurer, (req, res, next) => {
 router.post('/', authenticationEnsurer, async (req, res, next) => {
   const scheduleId = uuidv4();
   const updatedAt = new Date();
-  const schedule = await Schedule.create({
+  await Schedule.create({
     scheduleId: scheduleId,
     scheduleName: req.body.scheduleName.slice(0, 255) || '(undefined)',
     memo: req.body.memo,
     createdBy: req.user.id,
     updatedAt: updatedAt
   });
-  const candidateNames = req.body.candidates.trim().split('\n').map(s => s.trim()).filter(s => s !== "");
-  const candidates = candidateNames.map(c => {
-    return {
-      candidateName: c,
-      scheduleId: schedule.scheduleId
-    }
-  });
-  await Candidate.bulkCreate(candidates);
-  
-  res.redirect('/schedules/' + schedule.scheduleId);
+  createCandidatesAndRedirect(parseCandidateNames(req), scheduleId, res);
 });
 
 router.get('/:scheduleId', authenticationEnsurer, async (req, res, next) => {
@@ -120,10 +111,88 @@ router.get('/:scheduleId', authenticationEnsurer, async (req, res, next) => {
       commentMap: commentMap
     });
   } else {
-    const err = new Error('404 Not Found');
+    const err = new Error('Schedule Not Found');
     err.status = 404;
     next(err);
   }
 });
+
+router.get('/:scheduleId/edit', authenticationEnsurer, async (req, res, next) => {
+  const schedule = await Schedule.findOne({
+    where: { scheduleId: req.params.scheduleId }
+  });
+  if (isMine(req, schedule)) {
+    const candidates = await Candidate.findAll({
+      where: { scheduleId: schedule.scheduleId },
+      order: [[ 'candidateId', 'ASC' ]]
+    });
+    res.render('edit', {
+      user: req.user,
+      schedule: schedule,
+      candidates: candidates
+    });
+  } else {
+    const err = new Error('Schedule Not Found or Not Authorized')
+    err.status = 404;
+    next(err);
+  }
+});
+
+function isMine(req, schedule) {
+  return schedule && parseInt(schedule.createdBy) === parseInt(req.user.id);
+}
+
+router.post('/:scheduleId', authenticationEnsurer, async (req, res, next) => {
+  let schedule = await Schedule.findOne({
+    where: {
+      scheduleId: req.params.scheduleId
+    }
+  });
+  if (schedule && isMine(req, schedule)) {
+    if (parseInt(req.query.edit) === 1) {
+      const updatedAt = new Date();
+      schedule = await schedule.update({
+        scheduleId: schedule.scheduleId,
+        scheduleName: req.body.scheduleName.slice(0, 255) || '(undefined)',
+        memo: req.body.memo,
+        createdBy: req.user.id,
+        updatedAt: updatedAt
+      });
+
+      // check if candidate is added
+      const candidateNames = parseCandidateNames(req);
+      if (candidateNames) {
+        createCandidatesAndRedirect(candidateNames, schedule.scheduleId, res);
+      } else {
+        res.redirect('/schedules/' + schedule.scheduleId);
+      }
+    } else {
+      const err = new Error('Bad request.');
+      err.status = 400;
+      next(err);
+    }
+  } else {
+    const err = new Error('Schedule Not Found or Not Authorized');
+    err.status = 404;
+    next(err);
+  }
+});
+
+async function createCandidatesAndRedirect(candidateNames, scheduleId, res) {
+  const candidates = candidateNames.map(c => {
+    return {
+      candidateName: c,
+      scheduleId: scheduleId
+    }
+  });
+  await Candidate.bulkCreate(candidates);
+  res.redirect('/schedules/' + scheduleId);
+}
+
+function parseCandidateNames(req) {
+  return req.body.candidates.trim()
+    .split('\n').map(schedule => schedule.trim())
+    .filter(schedule => schedule !== "");
+}
 
 module.exports =  router;

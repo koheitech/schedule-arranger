@@ -158,6 +158,46 @@ describe('/schedules/:scheduleId/users/:userId/comments', () => {
   });
 });
 
+describe('/schedules/:scheduleId?edit=1', () => {
+  let scheduleId = '';
+  
+  beforeAll(() => {
+    passportStub.install(app);
+    passportStub.login({ id: 0, username: 'testuser' });
+  });
+
+  afterAll(async () => {
+    passportStub.logout();
+    passportStub.uninstall();
+    await deleteScheduleAggregate(scheduleId);
+  });
+
+  test('update schedule and add candidates', async () => {
+    await User.upsert({ userId: 0, username: 'testuser' });
+    const res = await request(app)
+      .post('/schedules')
+      .send({ scheduleName: 'test schedule', memo: 'test memo', candidates: 'can1'});
+    const createdSchedulePath = res.headers.location;
+    scheduleId = createdSchedulePath.split('/schedules/')[1];
+
+    // test if update succeeds
+    await request(app)
+      .post(`/schedules/${scheduleId}?edit=1`)
+      .send({ scheduleName: 'updated schedule', memo: 'updated memo', candidates: 'can2'});
+    const schedule = await Schedule.findByPk(scheduleId);
+    expect(schedule.scheduleName).toBe('updated schedule');
+    expect(schedule.memo).toBe('updated memo');
+    const candidates = await Candidate.findAll({
+      where: { scheduleId: scheduleId },
+      order: [[ 'candidateId', 'ASC' ]]
+    });
+    expect(candidates.length).toBe(2);
+    expect(candidates[0].candidateName).toBe('can1');
+    expect(candidates[1].candidateName).toBe('can2');
+  });
+});
+
+
 async function deleteScheduleAggregate(scheduleId) {
   // Delete test comments
   const comments = await Comment.findAll({

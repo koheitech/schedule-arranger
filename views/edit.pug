@@ -1,0 +1,20 @@
+extends layout
+
+block content 
+  h3 Edit Schedule
+  form(method="post", action=`/schedules/${schedule.scheduleId}?edit=1`)
+    div
+      h5 Schedule Name 
+      input(type="text" name="scheduleName" value=schedule.scheduleName)
+    div
+      h5 Memo 
+      textarea(name="memo") #{schedule.memo}
+    div 
+      label Existing Candidate Dates 
+      ul 
+        each candidate in candidates 
+          li #{candidate.candidateName}
+      p Add Candidate Dates (line break for multiple candidates)
+      textarea(name="candidates")
+    div 
+      button(type="submit") Edit Schedule
