@@ -1,6 +1,4 @@
 extends layout 
 
 block content 
-  a(href="/auth/github") Log in with GitHub
-  if user 
-    p Logged in as #{user.username}
+  a(href="/auth/github").btn.btn-info.my-3 Log in with GitHub

@@ -1,14 +1,14 @@
 extends layout
 
 block content 
-  form(method="post", action="/schedules")
-    div 
-      h5 Schedule Name 
-      input(type="text" name="scheduleName")
-    div 
-      h5 Memo 
-      textarea(name="memo") 
-    div 
-      h5 Candidate Dates (line break for multiple candidates)
-      textarea(name="candidates")
-    button(type="submit") Create Schedule
+  form(method="post", action="/schedules").my-3
+    div.form-group
+      label(for="scheduleName") Schedule Name
+      input(type="text" name="scheduleName")#scheduleName.form-control
+    div.form-group
+      label(for="memo") Memo 
+      textarea(name="memo")#memo.form-control
+    div.form-group 
+      label(for="candidates") Candidate Dates (line break for multiple candidates)
+      textarea(name="candidates" rows="4")#candidates.form-control
+    button(type="submit").btn.btn-info Create Schedule

@@ -1,26 +1,22 @@
 extends layout
 
 block content
-  h1= title
-  p Welcome to #{title}
+  div.jumbotron.my-3
+    h1.display-4 Schedule Arranger
+    p.lead Schedule Arranger is a schedule-arranging service authenticated with GitHub
+  if user
   div
-    if user 
-      div
-        a(href="/logout") Logout from #{user.username}
-      div
-        a(href="/schedules/new") Create Schedule
-      - var hasSchedule = schedules.length > 0
-      if hasSchedule
-        h3 Your Schedules 
-        table.table 
-          tr 
-            th Schedule Name 
-            th Updated at 
-          each schedule in schedules 
-            tr 
-              td 
-                a(href=`/schedules/${schedule.scheduleId}`) #{schedule.scheduleName}
-              td #{schedule.updatedAt}
-    else 
-      div
-        a(href="/login") Login
+    div
+      a(href="/schedules/new").btn.btn-info Create Schedule
+    - var hasSchedule = schedules.length > 0
+    if hasSchedule
+      h3.my-3 My Schedules
+      table.table
+        tr
+          th Schedule Name
+          th Updated At
+        each schedule in schedules
+          tr
+            td
+              a(href=`/schedules/${schedule.scheduleId}`) #{schedule.scheduleName}
+            td #{schedule.formattedUpdatedAt}

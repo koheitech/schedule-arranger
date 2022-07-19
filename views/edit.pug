@@ -1,23 +1,22 @@
 extends layout
-
 block content 
-  h3 Edit Schedule
+  h3.my-3 Edit Schedule
   form(method="post", action=`/schedules/${schedule.scheduleId}?edit=1`)
-    div
-      h5 Schedule Name 
-      input(type="text" name="scheduleName" value=schedule.scheduleName)
-    div
-      h5 Memo 
-      textarea(name="memo") #{schedule.memo}
-    div 
+    div.form-group
+      label(for="scheduleName") Schedule Name 
+      input(type="text" name="scheduleName" value=schedule.scheduleName)#scheduleName.form-control
+    div.form-group
+      label(for="memo") Memo 
+      textarea(name="memo")#memo.form-control #{schedule.memo}
+    div.from-group
       label Existing Candidate Dates 
-      ul 
+      ul.list-group 
         each candidate in candidates 
-          li #{candidate.candidateName}
-      p Add Candidate Dates (line break for multiple candidates)
-      textarea(name="candidates")
-    div 
-      button(type="submit") Edit Schedule
-  h3 Dangerous Change 
-  form(method="post", action=`/schedules/${schedule.scheduleId}?delete=1`)
-    button(type="submit") Delete Schedule
+          li.list-group-item #{candidate.candidateName}
+      label(for="candidates").my-2 Add Candidate Dates (line break for multiple candidates)
+      textarea(name="candidates")#candidates.form-control
+    div
+      button(type="submit").btn.btn-info Edit Schedule
+  h3.my-3 Dangerous Change 
+    form(method="post", action=`/schedules/${schedule.scheduleId}?delete=1`)
+      button(type="submit").btn.btn-danger Delete Schedule
