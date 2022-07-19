@@ -7,6 +7,7 @@ const Schedule = require('../models/schedule');
 const Candidate = require('../models/candidate');
 const Availability = require('../models/availability');
 const Comment = require('../models/comment');
+const deleteScheduleAggregate = require('../routes/schedules').deleteScheduleAggregate;
 
 describe('/login', () => {
   beforeAll(() => {
@@ -197,39 +198,60 @@ describe('/schedules/:scheduleId?edit=1', () => {
   });
 });
 
-
-async function deleteScheduleAggregate(scheduleId) {
-  // Delete test comments
-  const comments = await Comment.findAll({
-    where: { scheduleId: scheduleId }
-  });
-  const promiseCommentDestroy = comments.map(comment => {
-    return comment.destroy();
-  });
-  
-  await Promise.all(promiseCommentDestroy);
-  
-  // Delete test availabilities
-  const availabilities = await Availability.findAll({
-    where: { scheduleId: scheduleId }
+describe('/schedules/:scheduleId?delete=1', () => {
+  beforeAll(() => {
+    passportStub.install(app);
+    passportStub.login({ id: 0, username: 'testuser' });
   });
 
-  const promiseAvailabilityDestroy = availabilities.map(availability => {
-    return availability.destroy();
+  afterAll(() => {
+    passportStub.logout();
+    passportStub.uninstall();
   });
 
-  await Promise.all(promiseAvailabilityDestroy);
-  
-  // Delete test candidates
-  const candidates = await Candidate.findAll({
-    where: { scheduleId: scheduleId }
-  });
-  const promiseCandidateDestroy = candidates.map(candidate => {
-    return candidate.destroy();
-  });
+  test('delete all info of the given schedule', async () => {
+    await User.upsert({ userId: 0, username: 'testuser' });
+    const res = await request(app)
+      .post('/schedules')
+      .send({ scheduleName: 'test schedule', candidates: 'can1' });
+    const createdSchedulePath = res.headers.location;
+    const scheduleId = createdSchedulePath.split('/schedules/')[1];
 
-  await Promise.all(promiseCandidateDestroy);
+    // create availability
+    const candidate = await Candidate.findOne({
+      where: { scheduleId: scheduleId }
+    });
+    await request(app)
+      .post(`/schedules/${scheduleId}/users/${0}/candidates/${candidate.candidateId}`)
+      .send({ availability: 2 });
 
-  const schedule = await Schedule.findByPk(scheduleId);
-  await schedule.destroy();
-}
+    // create comment
+    await request(app)
+      .post(`/schedules/${scheduleId}/users/${0}/comments`)
+      .send({ comment: 'test comment' })
+      .expect('{"status":"OK","comment":"test comment"}');
+
+    // delete
+    await request(app)
+      .post(`/schedules/${scheduleId}?delete=1`);
+
+    // test
+    const comments = await Comment.findAll({
+      where: { scheduleId: scheduleId }
+    });
+    expect(comments.length).toBe(0);
+
+    const availabilities = await Availability.findAll({
+      where: { scheduleId: scheduleId }
+    });
+    expect(availabilities.length).toBe(0);
+
+    const candidates = await Candidate.findAll({
+      where: { scheduleId: scheduleId }
+    });
+    expect(candidates.length).toBe(0);
+
+    const schedule = await Schedule.findByPk(scheduleId);
+    expect(!schedule).toBe(true);
+  });
+});
