@@ -1,7 +1,7 @@
 # Schedule Arranger README
 
 ## Description(en)
-Schedule Arranger is a schedule-arranging app with authentication with gitHub account.
+Schedule Arranger is a schedule-arranging app authenticated with gitHub OAuth.
 
 This application was created based on the tutorial by [N予備校](https://www.nnn.ed.nico/).
 
@@ -11,11 +11,11 @@ This app is running on https://nschoolschedulearranger.herokuapp.com/.
 - Created with Node.js + Express.js framework
 - Following actions can be done:
   - login/logout with GitHub
-  - user can;
+  - user can:
     - create new schedule
     - edit/delete the given schedule
     - put a comment on the given schedule
-    - answer to candidate dates (AJAX)
+    - answer to candidate dates (using AJAX)
 
 ## Description(ja)
 Schedule ArrangerはスケジュールをGitHub OAuthによって認証し、
@@ -32,7 +32,7 @@ https://nschoolschedulearranger.herokuapp.com/
 - 技術: Node.js + Express.js
 - 以下のアクションを実装
   - GitHub認証を用いたログインとログアウト
-  - ユーザは以下のアクションを実行可能
+  - ユーザは以下のアクションを実行可能:
     - 新しい予定の作成
     - 予定の編集・削除
     - 予定に対するコメント
