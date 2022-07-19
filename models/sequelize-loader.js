@@ -11,7 +11,7 @@ const dialectOptions = {
 const sequelize = process.env.DATABASE_URL ?
   // Production env
   new Sequelize(
-    proecss.env.DATABASE_URL,
+    process.env.DATABASE_URL,
     {
       logging: false,
       dialectOptions
