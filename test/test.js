@@ -6,6 +6,7 @@ const User = require('../models/user');
 const Schedule = require('../models/schedule');
 const Candidate = require('../models/candidate');
 const Availability = require('../models/availability');
+const Comment = require('../models/comment');
 
 describe('/login', () => {
   beforeAll(() => {
@@ -120,7 +121,54 @@ describe('/schedules/:scheduleId/users/:userId/candidates/:candidateId', () => {
   });
 });
 
+describe('/schedules/:scheduleId/users/:userId/comments', () => {
+  let scheduleId = '';
+
+  beforeAll(() => {
+    passportStub.install(app);
+    passportStub.login({ id: 0, username: 'testuser' });
+  });
+
+  afterAll(async () => {
+    passportStub.logout();
+    passportStub.uninstall();
+    await deleteScheduleAggregate(scheduleId);
+  });
+
+  test('update comments', async () => {
+    await User.upsert({ userId: 0, username: 'testuser'});
+    const res = await request(app)
+      .post('/schedules')
+      .send({
+        scheduleName: 'test comment schedule 1',
+        candidates: 'test comment can 1'
+      });
+    const createdSchedulePath = res.headers.location;
+    scheduleId = createdSchedulePath.split('/schedules/')[1];
+
+    const userId = 0;
+    await request(app)
+      .post(`/schedules/${scheduleId}/users/${userId}/comments`)
+      .send({ comment: 'testcomment' })
+      .expect('{"status":"OK","comment":"testcomment"}');
+    const { comment } = await Comment.findOne({
+      where: { scheduleId: scheduleId }
+    });
+    expect(comment).toBe('testcomment');
+  });
+});
+
 async function deleteScheduleAggregate(scheduleId) {
+  // Delete test comments
+  const comments = await Comment.findAll({
+    where: { scheduleId: scheduleId }
+  });
+  const promiseCommentDestroy = comments.map(comment => {
+    return comment.destroy();
+  });
+  
+  await Promise.all(promiseCommentDestroy);
+  
   // Delete test availabilities
   const availabilities = await Availability.findAll({
     where: { scheduleId: scheduleId }
