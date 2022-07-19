@@ -7,6 +7,10 @@ const helmet = require('helmet');
 const session = require('express-session');
 const passport = require('passport');
 
+const GitHubStrategy = require('passport-github2').Strategy;
+const GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID || '2acce5ef5679748c5e91';
+const GITHUB_CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET || '8262b0fad194259e64b1e2fafd5fac67dcd23195';
+
 // loading model
 const User = require('./models/user');
 const Schedule = require('./models/schedule');
@@ -28,10 +32,6 @@ User.sync().then(async () => {
   Availability.sync();
 });
 
-const GitHubStrategy = require('passport-github2').Strategy;
-const GITHUB_CLIENT_ID = '2acce5ef5679748c5e91';
-const GITHUB_CLIENT_SECRET = '8262b0fad194259e64b1e2fafd5fac67dcd23195';
-
 passport.serializeUser(function (user, done) {
   done(null, user);
 });
@@ -43,7 +43,7 @@ passport.deserializeUser(function (obj, done) {
 passport.use(new GitHubStrategy({
   clientID: GITHUB_CLIENT_ID,
   clientSecret: GITHUB_CLIENT_SECRET,
-  callbackURL: 'http://localhost:8000/auth/github/callback'
+  callbackURL: process.env.CALLBACK_URL ? process.env.CALLBACK_URL + 'auth/github/callback' : 'http://localhost:8000/auth/github/callback'
 },
   function (accessToken, refreshToken, profile, done) {
     process.nextTick(async function () {
