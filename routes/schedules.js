@@ -101,8 +101,6 @@ router.get('/:scheduleId', authenticationEnsurer, async (req, res, next) => {
       });
     });
 
-    console.log(availabilityMapMap); // TODO: to be deleted
-
     res.render('schedule', {
       user: req.user,
       schedule: schedule,
