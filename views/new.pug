@@ -1,0 +1,14 @@
+extends layout
+
+block content 
+  form(method="post", action="/schedules")
+    div 
+      h5 Schedule Name 
+      input(type="text" name="scheduleName")
+    div 
+      h5 Memo 
+      textarea(name="memo") 
+    div 
+      h5 Candidate Dates (line break for multiple candidates)
+      textarea(name="candidates")
+    button(type="submit") Create Schedule
